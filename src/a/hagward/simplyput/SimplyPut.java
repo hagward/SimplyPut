@@ -10,9 +10,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -37,12 +42,73 @@ public class SimplyPut {
 	private JScrollPane scrollPane;
 	private StatusBar statusBar;
 	
+	private File openFile = null;
+	
 	/**
-	 * Shows a popup asking if the user wants to save the document.
+	 * Shows a dialog asking if the user wants to save the document.
 	 * @return 0, 1 and 2 for "Yes", "No" and "Cancel" respectively
 	 */
-	private int showSavePopup() {
+	private int showDoYouWantToSaveDialog() {
 		return JOptionPane.showConfirmDialog(null, messages.getString("savePopup"));
+	}
+	
+	/**
+	 * Possibly shows a file chooser dialog (if the file has not been saved
+	 * before or if forceDialog is set to true) and then writes the content of
+	 * the editor to the current open file. It also sets the chosen file as the
+	 * currently opened file by setting openFile.
+	 * @param forceDialog always show a file chooser dialog
+	 * @return true if saving was successful, false otherwise
+	 */
+	private boolean saveCurrentFile(boolean forceDialog) {
+		if (openFile == null || forceDialog) {
+			JFileChooser chooser = new JFileChooser();
+			int returnVal = chooser.showSaveDialog(null);
+			if (returnVal != JFileChooser.APPROVE_OPTION)
+				return false;
+			openFile = chooser.getSelectedFile();
+		}
+		
+		try {
+			PrintWriter out = new PrintWriter(openFile);
+			out.print(editPane.editor.getText());
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		editPane.setModified(false);
+		return true;
+	}
+	
+	/**
+	 * Shows a file chooser dialog and loads the contents of the selected file
+	 * into the editor. It also marks that file as the currently opened file by
+	 * setting openFile.
+	 * @return true if opening a file was successful, false otherwise
+	 */
+	private boolean openNewFile() {
+		JFileChooser chooser = new JFileChooser();
+		int returnVal = chooser.showOpenDialog(null);
+		if (returnVal != JFileChooser.APPROVE_OPTION)
+			return false;
+		
+		// TODO: This is quite slow when opening large files for some reason.
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(chooser.getSelectedFile()));
+			editPane.editor.setText(null); // Clear the editor.
+			char[] buf = new char[512];
+			int read;
+			while ((read = in.read(buf)) != -1)
+				editPane.editor.append(String.valueOf(buf, 0, read));
+			in.close();
+			openFile = chooser.getSelectedFile();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		editPane.setModified(false);
+		return true;
 	}
 	
 	/**
@@ -61,8 +127,18 @@ public class SimplyPut {
 	 * otherwise it quits the program directly.
 	 */
 	public void exitProgram() {
-		if (!editPane.isModified() || (editPane.isModified() && showSavePopup() < 2))
+		if (!editPane.isModified()) {
 			System.exit(0);
+		} else if (editPane.isModified()) {
+			int returnVal = showDoYouWantToSaveDialog();
+			switch (returnVal) {
+			case 0:
+				saveCurrentFile(false);
+			case 1:
+				System.exit(0);
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -87,21 +163,39 @@ public class SimplyPut {
 		newItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println(showSavePopup());
+				System.out.println("New File!");
 			}
 		});
 		fileMenu.add(newItem);
 		
 		openItem = new JMenuItem(messages.getString("fileMenuOpen"), KeyEvent.VK_O);
 		openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		openItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openNewFile();
+			}
+		});
 		fileMenu.add(openItem);
 		
 		saveItem = new JMenuItem(messages.getString("fileMenuSave"), KeyEvent.VK_S);
 		saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		saveItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurrentFile(false);
+			}
+		});
 		fileMenu.add(saveItem);
 		
 		saveAsItem = new JMenuItem(messages.getString("fileMenuSaveAs"), KeyEvent.VK_A);
 		saveAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK));
+		saveAsItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurrentFile(true);
+			}
+		});
 		fileMenu.add(saveAsItem);
 		
 		fileMenu.addSeparator();
@@ -157,7 +251,7 @@ public class SimplyPut {
 			@Override
 			public void caretUpdate(CaretEvent e) {
 				int[] lc = editPane.getLineAndCol();
-				statusBar.updateStatus(lc[0], lc[1]);
+				statusBar.setLineCol(lc[0], lc[1]);
 			}
 		});
 		
