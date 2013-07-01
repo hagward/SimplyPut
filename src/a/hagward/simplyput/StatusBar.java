@@ -12,9 +12,9 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class StatusBar extends JPanel {
 	ResourceBundle messages;
-	JLabel lineColLabel, encodingLabel;
+	JLabel lineColLabel, charsetLabel;
 	
-	public StatusBar(ResourceBundle messages) {
+	public StatusBar(ResourceBundle messages, String charset) {
 		this.messages = messages;
 		setLayout(new BorderLayout());
 		
@@ -27,8 +27,8 @@ public class StatusBar extends JPanel {
 		JPanel rightPane = new JPanel();
 		add(rightPane, BorderLayout.EAST);
 		
-		encodingLabel = new JLabel("ANSI");
-		rightPane.add(encodingLabel);
+		charsetLabel = new JLabel(charset);
+		rightPane.add(charsetLabel);
 		
 		setLineCol(1, 1);
 	}
@@ -39,7 +39,7 @@ public class StatusBar extends JPanel {
 				+ " " + column);
 	}
 	
-	public void setEncoding(String encoding) {
-		encodingLabel.setText(encoding);
+	public void setCharset(String charset) {
+		charsetLabel.setText(charset);
 	}
 }

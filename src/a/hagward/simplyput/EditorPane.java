@@ -1,6 +1,7 @@
 package a.hagward.simplyput;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.JPanel;
@@ -20,15 +21,17 @@ public class EditorPane extends JPanel {
 	
 	private boolean modified = false;
 	
-	public EditorPane(Font font) {
+	public EditorPane(Font font, int tabSize) {
 		setLayout(new BorderLayout());
 		
 		editor = new JTextArea();
 		editor.setEditable(true);
 		editor.setFont(font);
+		editor.setTabSize(tabSize);
 		add(editor, BorderLayout.CENTER);
 		
 		lineNumbers = new LineNumberBar(font);
+		lineNumbers.setForeground(Color.white);
 		editor.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {

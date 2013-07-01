@@ -10,10 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -30,26 +28,29 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
+import org.apache.commons.io.FileUtils;
+
 /**
  * @author Anders Hagward
  */
 public class SimplyPut {
 	public EditorPane editPane;
 	
-	private Locale currentLocale;
-	private ResourceBundle messages;
-	private ResourceBundle settings;
 	private JScrollPane scrollPane;
 	private StatusBar statusBar;
 	
-	private File openFile = null;
+	private Locale currentLocale;
+	private ResourceBundle messages;
+	private ResourceBundle settings;
+	private Charset charset;
+	private File openFile;
 	
 	/**
 	 * Shows a dialog asking if the user wants to save the document.
 	 * @return 0, 1 and 2 for "Yes", "No" and "Cancel" respectively
 	 */
 	private int showDoYouWantToSaveDialog() {
-		return JOptionPane.showConfirmDialog(null, messages.getString("savePopup"));
+		return JOptionPane.showConfirmDialog(null, messages.getString("doYouWantToSaveDialog"));
 	}
 	
 	/**
@@ -70,9 +71,7 @@ public class SimplyPut {
 		}
 		
 		try {
-			PrintWriter out = new PrintWriter(openFile);
-			out.print(editPane.editor.getText());
-			out.close();
+			FileUtils.writeStringToFile(openFile, editPane.editor.getText(), charset);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -95,13 +94,8 @@ public class SimplyPut {
 		
 		// TODO: This is quite slow when opening large files for some reason.
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(chooser.getSelectedFile()));
-			editPane.editor.setText(null); // Clear the editor.
-			char[] buf = new char[512];
-			int read;
-			while ((read = in.read(buf)) != -1)
-				editPane.editor.append(String.valueOf(buf, 0, read));
-			in.close();
+			editPane.editor.setText(FileUtils.readFileToString(
+					chooser.getSelectedFile(), charset));
 			openFile = chooser.getSelectedFile();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +106,8 @@ public class SimplyPut {
 	}
 	
 	/**
-	 * Loads the language and settings files.
+	 * Loads the language and settings files and initializes the class
+	 * variables.
 	 * @param language the language to use
 	 * @param country the country of the specified language
 	 */
@@ -120,10 +115,13 @@ public class SimplyPut {
 		currentLocale = new Locale(language, country);
 		messages = ResourceBundle.getBundle("MessagesBundle", currentLocale);
 		settings = ResourceBundle.getBundle("SettingsBundle");
+		
+		openFile = null;
+		charset = Charset.forName(settings.getString("defaultCharset"));
 	}
 	
 	/**
-	 * Shows the "Do you want to save?" popup if the document is modified,
+	 * Shows the "Do you want to save?" dialog if the document is modified,
 	 * otherwise it quits the program directly.
 	 */
 	public void exitProgram() {
@@ -246,7 +244,8 @@ public class SimplyPut {
 		contentPane.setOpaque(true);
 		
 		Font font = new Font(settings.getString("font"), Font.PLAIN, Integer.valueOf(settings.getString("fontSize")));
-		editPane = new EditorPane(font);
+		int tabSize = Integer.valueOf(settings.getString("tabSize"));
+		editPane = new EditorPane(font, tabSize);
 		editPane.editor.addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent e) {
@@ -259,7 +258,7 @@ public class SimplyPut {
 		scrollPane.setBorder(null);
 		contentPane.add(scrollPane, BorderLayout.CENTER);
 		
-		statusBar = new StatusBar(messages);
+		statusBar = new StatusBar(messages, charset.name());
 		contentPane.add(statusBar, BorderLayout.SOUTH);
 		
 		return contentPane;
@@ -269,7 +268,7 @@ public class SimplyPut {
 	 * Creates and shows the GUI!!!
 	 */
 	private static void createAndShowGUI() {
-		JFrame frame = new JFrame("TextEd");
+		JFrame frame = new JFrame("SimplyPut");
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		final SimplyPut textEd = new SimplyPut();
