@@ -46,6 +46,13 @@ public class SimplyPut {
 	private File openFile;
 	
 	/**
+	 * Shows a meaningless 'about' dialog.
+	 */
+	private void showAboutDialog() {
+		JOptionPane.showMessageDialog(null, "SimplyPut, by Anders Hagward");
+	}
+	
+	/**
 	 * Shows a dialog asking if the user wants to save the document.
 	 * @return 0, 1 and 2 for "Yes", "No" and "Cancel" respectively
 	 */
@@ -146,9 +153,10 @@ public class SimplyPut {
 	 */
 	public JMenuBar createMenuBar() {
 		JMenuBar menuBar;
-		JMenu fileMenu, editMenu;
+		JMenu fileMenu, editMenu, helpMenu;
 		JMenuItem newItem, openItem, saveItem, saveAsItem, exitItem;
 		JMenuItem undoItem, redoItem, delLineItem;
+		JMenuItem aboutItem;
 		
 		menuBar = new JMenuBar();
 		
@@ -232,6 +240,19 @@ public class SimplyPut {
 		});
 		editMenu.add(delLineItem);
 		
+		helpMenu = new JMenu(messages.getString("helpMenu"));
+		helpMenu.setMnemonic(KeyEvent.VK_H);
+		menuBar.add(helpMenu);
+		
+		aboutItem = new JMenuItem(messages.getString("helpMenuAbout"), KeyEvent.VK_A);
+		aboutItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				showAboutDialog();
+			}
+		});
+		helpMenu.add(aboutItem);
+		
 		return menuBar;
 	}
 	
@@ -265,7 +286,7 @@ public class SimplyPut {
 	}
 	
 	/**
-	 * Creates and shows the GUI!!!
+	 * Creates and shows the amazing GUI!!!
 	 */
 	private static void createAndShowGUI() {
 		JFrame frame = new JFrame("SimplyPut");

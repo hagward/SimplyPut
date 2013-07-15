@@ -11,11 +11,12 @@ import javax.swing.event.DocumentListener;
 
 /**
  * @author Anders Hagward
- * TODO: is it possible to have this extend JTextArea and still
- *       contain the line number bar? 
+ * TODO: Is it really cool to let the LineNumberBar be a part of
+ * this class?
  */
 @SuppressWarnings("serial")
 public class EditorPane extends JPanel {
+	// TODO: Use EditorKit instead?
 	public JTextArea editor;
 	private LineNumberBar lineNumbers;
 	
@@ -28,6 +29,7 @@ public class EditorPane extends JPanel {
 		editor.setEditable(true);
 		editor.setFont(font);
 		editor.setTabSize(tabSize);
+		
 		add(editor, BorderLayout.CENTER);
 		
 		lineNumbers = new LineNumberBar(font);
@@ -41,6 +43,9 @@ public class EditorPane extends JPanel {
 			
 			@Override
 			public void insertUpdate(DocumentEvent e) {
+				// User typed a character, try to autocomplete.
+				if (e.getLength() == 1)
+					autoComplete();
 				lineNumbers.setLines(editor.getLineCount());
 				modified = true;
 			}
@@ -49,6 +54,15 @@ public class EditorPane extends JPanel {
 			public void changedUpdate(DocumentEvent e) {}
 		});
 		add(lineNumbers, BorderLayout.WEST);
+	}
+	
+	private void autoComplete() {
+		// TODO: Create my own Document/DocumentFilter, read in literals to
+		// auto-complete from a properties file.
+//		String text = editor.getText();
+//		char lastChar = text.charAt(text.length() - 1);
+//		if (lastChar == '{')
+//			editor.append("}");
 	}
 	
 	/**
