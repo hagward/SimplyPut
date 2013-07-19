@@ -154,12 +154,13 @@ public class SimplyPut {
 	public JMenuBar createMenuBar() {
 		JMenuBar menuBar;
 		JMenu fileMenu, editMenu, helpMenu;
-		JMenuItem newItem, openItem, saveItem, saveAsItem, exitItem;
-		JMenuItem undoItem, redoItem, delLineItem;
-		JMenuItem aboutItem;
+		JMenuItem newItem, openItem, saveItem, saveAsItem, exitItem,
+				undoItem, redoItem, copyItem, cutItem, pasteItem,
+				delLineItem, aboutItem;
 		
 		menuBar = new JMenuBar();
 		
+		// Here follows the File menu.
 		fileMenu = new JMenu(messages.getString("fileMenu"));
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(fileMenu);
@@ -215,6 +216,7 @@ public class SimplyPut {
 		});
 		fileMenu.add(exitItem);
 		
+		// Here follows the Edit menu.
 		editMenu = new JMenu(messages.getString("editMenu"));
 		editMenu.setMnemonic(KeyEvent.VK_E);
 		menuBar.add(editMenu);
@@ -226,6 +228,20 @@ public class SimplyPut {
 		redoItem = new JMenuItem(messages.getString("editMenuRedo"), KeyEvent.VK_R);
 		redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
 		editMenu.add(redoItem);
+		
+		editMenu.addSeparator();
+		
+		copyItem = new JMenuItem(messages.getString("editMenuCopy"));
+		copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+		editMenu.add(copyItem);
+		
+		cutItem = new JMenuItem(messages.getString("editMenuCut"));
+		cutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+		editMenu.add(cutItem);
+		
+		pasteItem = new JMenuItem(messages.getString("editMenuPaste"));
+		pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+		editMenu.add(pasteItem);
 		
 		editMenu.addSeparator();
 		
@@ -270,8 +286,8 @@ public class SimplyPut {
 		editPane.editor.addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent e) {
-				int[] lc = editPane.getLineAndCol();
-				statusBar.setLineCol(lc[0], lc[1]);
+//				int[] lc = editPane.getLineAndCol();
+//				statusBar.setLineCol(lc[0], lc[1]);
 			}
 		});
 		

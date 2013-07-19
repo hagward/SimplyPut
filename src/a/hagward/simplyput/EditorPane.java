@@ -3,11 +3,14 @@ package a.hagward.simplyput;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.DefaultEditorKit;
 
 /**
  * @author Anders Hagward
@@ -17,7 +20,7 @@ import javax.swing.event.DocumentListener;
 @SuppressWarnings("serial")
 public class EditorPane extends JPanel {
 	// TODO: Use EditorKit instead?
-	public JTextArea editor;
+	public JEditorPane editor;
 	private LineNumberBar lineNumbers;
 	
 	private boolean modified = false;
@@ -25,34 +28,32 @@ public class EditorPane extends JPanel {
 	public EditorPane(Font font, int tabSize) {
 		setLayout(new BorderLayout());
 		
-		editor = new JTextArea();
-		editor.setEditable(true);
+		editor = new JEditorPane();
 		editor.setFont(font);
-		editor.setTabSize(tabSize);
-		
+//		editor.setTabSize(tabSize);
 		add(editor, BorderLayout.CENTER);
 		
 		lineNumbers = new LineNumberBar(font);
 		lineNumbers.setForeground(Color.white);
-		editor.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				lineNumbers.setLines(editor.getLineCount());
-				modified = true;
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				// User typed a character, try to autocomplete.
-				if (e.getLength() == 1)
-					autoComplete();
-				lineNumbers.setLines(editor.getLineCount());
-				modified = true;
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {}
-		});
+//		editor.getDocument().addDocumentListener(new DocumentListener() {
+//			@Override
+//			public void removeUpdate(DocumentEvent e) {
+//				lineNumbers.setLines(editor.getLineCount());
+//				modified = true;
+//			}
+//			
+//			@Override
+//			public void insertUpdate(DocumentEvent e) {
+//				// User typed a character, try to autocomplete.
+//				if (e.getLength() == 1)
+//					autoComplete();
+//				lineNumbers.setLines(editor.getLineCount());
+//				modified = true;
+//			}
+//			
+//			@Override
+//			public void changedUpdate(DocumentEvent e) {}
+//		});
 		add(lineNumbers, BorderLayout.WEST);
 	}
 	
@@ -68,15 +69,15 @@ public class EditorPane extends JPanel {
 	/**
 	 * @return the current caret position in line and column.
 	 */
-	public int[] getLineAndCol() {
-		int[] lc = {1, 1};
-		try {
-			int cp = editor.getCaretPosition();
-			lc[0] = editor.getLineOfOffset(cp);
-			lc[1] = cp - editor.getLineStartOffset(lc[0]++) + 1;
-		} catch (Exception ex) {}
-		return lc;
-	}
+//	public int[] getLineAndCol() {
+//		int[] lc = {1, 1};
+//		try {
+//			int cp = editor.getCaretPosition();
+//			lc[0] = editor.getLineOfOffset(cp);
+//			lc[1] = cp - editor.getLineStartOffset(lc[0]++) + 1;
+//		} catch (Exception ex) {}
+//		return lc;
+//	}
 	
 	public void setModified(boolean modified) {
 		this.modified = modified;
